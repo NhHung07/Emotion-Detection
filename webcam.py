@@ -4,15 +4,17 @@ import torch
 import numpy as np
 from torchvision import transforms
 from PIL import Image
-from model import EmotionCNN
+from model import EmotionCNN, ResNetEmotion
 import os
 
 # ==========================================
 # 1. CẤU HÌNH THIẾT BỊ VÀ TẢI MÔ HÌNH
 # ==========================================
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = EmotionCNN(num_classes=7).to(device)
-model.load_state_dict(torch.load('emotion_cnn_weights.pth', weights_only=True))
+# model = EmotionCNN(num_classes=7).to(device)
+# model.load_state_dict(torch.load('emotion_cnn_weights.pth', weights_only=True))
+model = ResNetEmotion(num_classes=7).to(device)
+model.load_state_dict(torch.load('resnet18_emotion_weights.pth', weights_only=True))
 model.eval()
 
 # ==========================================
@@ -28,7 +30,7 @@ transform = transforms.Compose([
 class_names = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
 
 emojis = {}
-emoji_size = 100 # Cố định kích thước Emoji to (100x100)
+emoji_size = 100 # Cố định kích thước Emoji 100*100
 
 print("Đang nạp dữ liệu Emoji...")
 for name in class_names:
@@ -75,6 +77,7 @@ while True:
             frame_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             paste_x = x + w + 15
             paste_y = y
+            # Chỉ gián khi còn đủ không gian tránh emoji bị cắt mất
             if paste_x + emoji_size < frame_pil.width:
                 frame_pil.paste(icon, (paste_x, paste_y), mask=icon)
             
